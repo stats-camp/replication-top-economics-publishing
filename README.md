@@ -45,9 +45,19 @@ problems are visible). The two Stata 13 datasets load with their labels, and
 `append`, `regress` with analytic weights and omitted collinear terms,
 `by varlist: summarize`, `poisson` with factor variables, `ksmirnov …, exact`,
 `by varlist: egen`, `ci means` with and without weights, `save`, and the text
-log all run. Where a command runs, its numbers agree with `4MainRuns.log`; the
-engine prints more digits than Stata in `ci` tables and shows numeric by-group
-headers as `type = 1.0` rather than `type = 1`.
+log all run. Where a command runs on the 2024 file alone, its numbers agree
+with `4MainRuns.log`; the engine prints more digits than Stata in `ci` tables
+and shows numeric by-group headers as `type = 1.0` rather than `type = 1`.
+
+One caveat belongs to the deposit itself. The log was written on 6 May 2025,
+but `FiftyYearsforJELExtensionSTATA13.dta` was saved on 15 May 2025 and
+carries a nonmissing `weight` for every 1963–2011 author, whereas the log's
+weighted statistics on the pooled file have zero weighted observations before
+2024 (for example `regress age year if type==1 [aw=weight]` uses 127
+observations and omits `year`). The pooled, weighted results in the log
+therefore cannot be reproduced from the deposited data by any program; the
+engine's larger weighted samples on the pooled file reflect the data as
+deposited.
 
 Three engine features are missing and are left in the script as
 implementation targets:
