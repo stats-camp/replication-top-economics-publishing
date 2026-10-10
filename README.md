@@ -38,39 +38,49 @@ in author age, female representation, co-authorship and research style.
 
 ## What runs
 
-The deposited script was executed statement by statement with the stats.camp
-engine on 2026-10-09 (native build, continuing after errors so independent
-problems are visible). The two Stata 13 datasets load with their labels, and
-`mvdecode`, `summarize` (with and without `aweight`s), `sort`, `tabulate`,
-`append`, `regress` with analytic weights and omitted collinear terms,
-`by varlist: summarize`, `poisson` with factor variables, `ksmirnov …, exact`,
-`by varlist: egen`, `ci means` with and without weights, `save`, and the text
-log all run. Where a command runs on the 2024 file alone, its numbers agree
-with `4MainRuns.log`; the engine prints more digits than Stata in `ci` tables
-and shows numeric by-group headers as `type = 1.0` rather than `type = 1`.
+The deposited script runs from top to bottom with the stats.camp engine
+(native build, 2026-10-09) from a scratch copy of the data; the opt-in test
+`top_economics_publishing_deposit_runs_unchanged` in `stats_core` repeats that
+run. The two Stata 13 datasets load with their labels, and every command in
+the script executes: `mvdecode`, `gener` and `regr` (Stata's abbreviations of
+`generate` and `regress`), `summarize` with and without `aweight`s, `sort`,
+`drop if … [_n-1]`, `tabulate` with and without the `by` prefix, `append`,
+`regress` with analytic weights and omitted collinear terms,
+`by varlist: summarize`, `poisson` with factor variables, `ksmirnov …, exact`
+with its ties note, `by varlist: egen`, `ci means` with and without weights
+and under `by`, `save`, and the text log.
 
-One caveat belongs to the deposit itself. The log was written on 6 May 2025,
-but `FiftyYearsforJELExtensionSTATA13.dta` was saved on 15 May 2025 and
-carries a nonmissing `weight` for every 1963–2011 author, whereas the log's
-weighted statistics on the pooled file have zero weighted observations before
-2024 (for example `regress age year if type==1 [aw=weight]` uses 127
-observations and omits `year`). The pooled, weighted results in the log
-therefore cannot be reproduced from the deposited data by any program; the
-engine's larger weighted samples on the pooled file reflect the data as
-deposited.
+Where a statement runs on the 2024 file alone, its results agree with
+`4MainRuns.log` to the printed precision: the Table 1 summaries, `tab
+nauthors` and `tab type` on one row per article, the 2024
+Kolmogorov–Smirnov tests, the weighted age-dispersion summaries for 2024, and
+the `ci means` tables. The test checks `r()` and `e()` values at seven points
+of the run.
 
-Three engine features are missing and are left in the script as
-implementation targets:
+Two caveats belong to the deposit itself; neither can be reproduced from the
+deposited files by any program:
 
-- Command-name abbreviations beyond the registered aliases: `gener` (for
-  `generate`, lines 8–11, 83–84, 116) and `regr` (for `regress`, lines 54, 56).
-  The `replace` and `summarize` lines that depend on those variables fail in
-  turn.
-- `by varlist: tabulate` (lines 44, 47–50, 60): the engine's `tabulate` does
-  not accept the `by` prefix.
-- Row subscripts inside `if` qualifiers: `drop if
-  articlenumber==articlenumber[_n-1]` (lines 24, 42). The same expression
-  works in `generate`.
+- The log was written on 6 May 2025, but
+  `FiftyYearsforJELExtensionSTATA13.dta` was saved on 15 May 2025 and
+  carries a nonmissing `weight` for every 1963–2011 author, whereas the
+  log's weighted statistics on the pooled file have zero weighted
+  observations before 2024 (for example `regress age year if type==1
+  [aw=weight]` uses 127 observations and omits `year`). The engine's larger
+  weighted samples on the pooled file reflect the data as deposited.
+- The pooled file has no `articlenumber`, so after `append` every pre-2024
+  row has it missing and line 42 (`drop if articlenumber==articlenumber[_n-1]`)
+  keeps a single pre-2024 row, whichever sorts first among the ties. The log
+  keeps 15 (one from 1993, 14 from 2011), so the file the log used differed
+  here as well. The three `ksmirnov type if year==2011` statements (lines 63,
+  68 and 73) therefore have no observations and stop with `r(2000)`, in Stata
+  as in stats.camp; the test runs past them as `do, nostop` would. The
+  by-group tables and the `regr`/`poisson` fits on the deduplicated pooled
+  rows (lines 44–60) differ from the log in their pre-2024 rows for the same
+  reason.
+
+Display differences that remain are cosmetic: `tabulate` does not wrap a
+long variable label into the column header, the `ksmirnov` column widths
+differ slightly, and `use` prints extra notes.
 
 `save ArticlesAllYears` has no `replace` option, so in Stata and in
 stats.camp a second run in the same working directory stops at that line until
