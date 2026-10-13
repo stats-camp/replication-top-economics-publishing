@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-13",
+  "engine": "stats.camp native (current working tree)",
+  "command": "do JELExtensionScript.do, nostop",
+  "source_deposit": "https://doi.org/10.3886/E229865V1",
+  "reference": "4MainRuns.log (deposited Stata 13 transcript)",
+  "do_files_modified": false,
+  "source_files_sha256": {
+    "5Calculations-- Fem(based on Lundberg-Stearns data and AEAP&P; Age, NAuthors calculations based on the two STATA data files.xlsx": "86c005fbf8ce11fde03975fc860951ffbfd32d032f0dd876a6664c7c43264f8c",
+    "1JournalArticles2024Top3.xlsx": "758903a49a9493e1f521365983d37508e68c79a5b2de6079643b4b55a40ede68",
+    "README.txt": "9df918f6aaee93934e3665f2349be9090d07ae29b71352a7f22f0974ef862078",
+    "3JELExtensionScript.do": "6efcd76705bda99f1c83f9a3f4ce78fe317e50ae33faedcc60c3258a3caa4e92",
+    "4MainRuns.log": "858b75469cb0897dfb999ab43e7c2e5a9a780ec4f7c113cf51d9153c3461111d",
+    "Articles2024STATA13.dta": "154a9eb40ee2630859739a90cc4d7e3282c7b98362942da5c04f5bde3d1a727c",
+    "FiftyYearsforJELExtensionSTATA13.dta": "a037071ee547e1d0214fbdb9e6f9618b09f7120a29bf63ed1ed3d31063e0aa59",
+    "JELExtensionScript.do": "54a668e69932032c54d984905c3a42836d4bb53adee79ef6f22d7ca640b9a0d1"
+  },
+  "confidence_intervals": {
+    "matched_nonempty_rows": 30,
+    "comparison": "All displayed numbers equal the reference; zero-observation rows omitted by engine."
+  },
+  "ks_2024": [
+    {
+      "comparison": "AER versus JPE",
+      "D": 0.1232,
+      "p_asymptotic": 0.44,
+      "p_exact": 0.402,
+      "comparison_precision": "deposited transcript"
+    },
+    {
+      "comparison": "AER versus QJE",
+      "D": 0.2644,
+      "p_asymptotic": 0.019,
+      "p_exact": 0.015,
+      "comparison_precision": "deposited transcript"
+    },
+    {
+      "comparison": "JPE versus QJE",
+      "D": 0.3139,
+      "p_asymptotic": 0.004,
+      "p_exact": 0.003,
+      "comparison_precision": "deposited transcript"
+    }
+  ],
+  "default_run": {
+    "stops_at_script_line": 63,
+    "return_code": 2000
+  },
+  "nostop_run": {
+    "reaches_log_close": true,
+    "error_lines": [
+      63,
+      68,
+      73
+    ],
+    "error_code": 2000
+  },
+  "fresh_stata_run": "Unavailable: installed Stata license expired; reference is the deposited transcript.",
+  "missing_scope": [
+    "Excel-only calculations and construction of published table/figure layouts are outside this Stata-script replication."
+  ],
+  "pooled_reference_limits": [
+    "The reference log was written before the historical dataset was saved with different analytic weights.",
+    "The historical dataset has no articlenumber; script deduplication keeps one historical row instead of the reference log's fifteen."
+  ]
+}

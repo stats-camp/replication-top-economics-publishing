@@ -35,14 +35,24 @@ in author age, female representation, co-authorship and research style.
 | `1JournalArticles2024Top3.xlsx` | same | Raw hand-coded 2024 article information per journal |
 | `5Calculations-- Fem(based on … STATA data files.xlsx` | same | Authors' spreadsheet calculations on female representation and the age and co-authorship decompositions |
 | `README.txt` | same | Authors' original package note |
+| `validation/statscamp-nostop.log` | — | stats.camp diagnostic transcript, including the three data errors |
+| `validation/results.json` | — | Source hashes, verified confidence intervals, exact KS results, and run status |
 
 ## What runs
 
-The deposited script runs from top to bottom with the stats.camp engine
-(native build, 2026-10-09) from a scratch copy of the data; the opt-in test
-`top_economics_publishing_deposit_runs_unchanged` in `stats_core` repeats that
-run. The two Stata 13 datasets load with their labels, and every command in
-the script executes: `mvdecode`, `gener` and `regr` (Stata's abbreviations of
+The Stata analysis is supported by the stats.camp engine, verified on
+2026-10-13 with the native build and the deposited Stata 13 transcript.
+**A normal Run stops at line 63 with `r(2000)` because the deposited data
+leave no 2011 observations for that test.** To execute the remaining analyses
+without editing the do-file, run this command from a fresh workspace:
+
+```stata
+do JELExtensionScript.do, nostop
+```
+
+This reaches `log close` and reports exactly three data errors, at lines 63,
+68, and 73. The two Stata 13 datasets load with their labels, and the script's
+command syntax is supported: `mvdecode`, `gener` and `regr` (Stata's abbreviations of
 `generate` and `regress`), `summarize` with and without `aweight`s, `sort`,
 `drop if … [_n-1]`, `tabulate` with and without the `by` prefix, `append`,
 `regress` with analytic weights and omitted collinear terms,
@@ -50,15 +60,31 @@ the script executes: `mvdecode`, `gener` and `regr` (Stata's abbreviations of
 with its ties note, `by varlist: egen`, `ci means` with and without weights
 and under `by`, `save`, and the text log.
 
-Where a statement runs on the 2024 file alone, its results agree with
-`4MainRuns.log` to the printed precision: the Table 1 summaries, `tab
-nauthors` and `tab type` on one row per article, the 2024
-Kolmogorov–Smirnov tests, the weighted age-dispersion summaries for 2024, and
-the `ci means` tables. The test checks `r()` and `e()` values at seven points
-of the run.
+The 2024-only summaries and frequency tables agree with `4MainRuns.log` to
+the printed precision. All three 2024 Kolmogorov–Smirnov tests match:
 
-Two caveats belong to the deposit itself; neither can be reproduced from the
-deposited files by any program:
+| Comparison | D | Asymptotic p | Exact p |
+| --- | --- | --- | --- |
+| AER versus JPE | 0.1232 | 0.440 | 0.402 |
+| AER versus QJE | 0.2644 | 0.019 | 0.015 |
+| JPE versus QJE | 0.3139 | 0.004 | 0.003 |
+
+All 30 confidence interval rows with observations match the reference's
+displayed numbers, including analytic weights, unweighted intervals, and
+`by` groups. For example, the weighted `meanage` interval for research
+styles 4 and 5 uses 430 observations: mean 41.93618, standard error
+0.3146931, and 95% confidence interval [41.31765, 42.55471]. The weighted
+2024 age-dispersion summaries also match the reference.
+
+The opt-in `stats_core` tests `top_economics_publishing_deposit_runs_unchanged`
+and `top_economics_publishing_do_modes_preserve_deposit` check these values,
+the source hashes, and both stopping modes. [Verification results](validation/results.json)
+and the [complete diagnostic transcript](validation/statscamp-nostop.log)
+are included. A fresh Stata rerun was unavailable because the installed
+license had expired; the numerical reference is the deposited Stata 13 log.
+
+Two inconsistencies between the deposited data and reference log prevent a
+full reproduction of the historical pooled results:
 
 - The log was written on 6 May 2025, but
   `FiftyYearsforJELExtensionSTATA13.dta` was saved on 15 May 2025 and
@@ -72,27 +98,42 @@ deposited files by any program:
   keeps a single pre-2024 row, whichever sorts first among the ties. The log
   keeps 15 (one from 1993, 14 from 2011), so the file the log used differed
   here as well. The three `ksmirnov type if year==2011` statements (lines 63,
-  68 and 73) therefore have no observations and stop with `r(2000)`, in Stata
-  as in stats.camp; the test runs past them as `do, nostop` would. The
+  68 and 73) therefore have no observations and return `r(2000)` in
+  stats.camp. A normal run stops at the first; `do, nostop` continues. The
   by-group tables and the `regr`/`poisson` fits on the deduplicated pooled
   rows (lines 44–60) differ from the log in their pre-2024 rows for the same
   reason.
 
-Display differences that remain are cosmetic: `tabulate` does not wrap a
-long variable label into the column header, the `ksmirnov` column widths
-differ slightly, and `use` prints extra notes.
+## Missing features and scope
 
-`save ArticlesAllYears` has no `replace` option, so in Stata and in
-stats.camp a second run in the same working directory stops at that line until
-the saved file is removed. The script's `log using MainRuns` writes
+No additional statistical command or option is needed to execute this
+script's valid samples in the verified native engine. The unavailable 2011
+KS results and mismatched historical weighted samples require corrected
+source data to reproduce the deposited log.
+
+The Stata script computes inputs for Table 1 and Figures 1–2; it does not
+produce the published Excel calculations or figure layouts. Manual female
+representation comparisons and age/co-authorship decompositions in the
+Excel workbook remain outside this replication's target.
+
+Display gaps remain: empty `ci means` groups omit Stata's row with N=0 and
+missing statistics, `tabulate` does not wrap long variable labels into the
+column header, `ksmirnov` column widths differ slightly, and `use` prints
+extra notes. Native verification does not establish a separately tested
+browser build.
+
+Before rerunning, close any active log and remove generated `MainRuns.log`
+and `ArticlesAllYears.dta`, or use a fresh workspace. Neither `log using`
+nor `save` has a `replace` option. The script's `log using MainRuns` writes
 `MainRuns.log` next to the data; the authors' deposited log keeps its deposit
 name `4MainRuns.log`, so the two never collide.
 
 ## Adaptations and scope
 
-The authors' note says the two path lines "need to be altered to fit your own
-machine and locations throughout the do-file". `JELExtensionScript.do` is the
-deposited do-file with exactly that alteration: the Windows prefix
+The authors' note asks users to adapt paths to their own machine.
+This package already contained a path-only working copy before the
+2026-10-13 verification. **Neither do-file was changed during this work.**
+`JELExtensionScript.do` differs from the deposited file only by removing the Windows prefix
 `D:\JEL2013Extension\` is removed from the ten `log using`, `use`, `append
 using` and `save` lines (4, 5, 30, 31, 52, 65, 70, 75, 76, 110), so the files
 are read from and written to the working directory. No command, option,
@@ -113,6 +154,7 @@ Repository deposit (`229865-V1.zip`, directory `Replication-files/`).
 | Deposited file | SHA-256 |
 | --- | --- |
 | `3JELExtensionScript.do` | `6efcd76705bda99f1c83f9a3f4ce78fe317e50ae33faedcc60c3258a3caa4e92` |
+| Existing path-only `JELExtensionScript.do` | `54a668e69932032c54d984905c3a42836d4bb53adee79ef6f22d7ca640b9a0d1` |
 | `2Articles2024STATA13.dta` (here `Articles2024STATA13.dta`) | `154a9eb40ee2630859739a90cc4d7e3282c7b98362942da5c04f5bde3d1a727c` |
 | `2FiftyYearsforJELExtensionSTATA13.dta` (here `FiftyYearsforJELExtensionSTATA13.dta`) | `a037071ee547e1d0214fbdb9e6f9618b09f7120a29bf63ed1ed3d31063e0aa59` |
 | `4MainRuns.log` | `858b75469cb0897dfb999ab43e7c2e5a9a780ec4f7c113cf51d9153c3461111d` |
