@@ -6,8 +6,8 @@ circulated as NBER Working Paper 33731 and IZA Discussion Paper 17863 (2025).
 
 This repository preserves the paper's official AEA replication deposit for
 [stats.camp](https://stats.camp), so the analysis can be inspected and run in
-the browser. The authors' commands remain in place, including the ones
-stats.camp does not implement yet.
+the browser. The authors' commands remain in place; the whole script runs,
+and its 2024-sample results equal Stata's (see below).
 
 **Open in stats.camp:**
 [JELExtensionScript.do](https://stats.camp/app?open=https%3A%2F%2Fgithub.com%2Fstats-camp%2Freplication-top-economics-publishing.git&file=JELExtensionScript.do)
@@ -41,7 +41,8 @@ in author age, female representation, co-authorship and research style.
 ## What runs
 
 The Stata analysis is supported by the stats.camp engine, verified on
-2026-10-13 with the native build and the deposited Stata 13 transcript.
+2026-10-13 against the deposited Stata 13 transcript and on 2026-10-15 against
+a fresh Stata 19.5 run of the unchanged script.
 **A normal Run stops at line 63 with `r(2000)` because the deposited data
 leave no 2011 observations for that test.** To execute the remaining analyses
 without editing the do-file, run this command from a fresh workspace:
@@ -80,8 +81,9 @@ The opt-in `stats_core` tests `top_economics_publishing_deposit_runs_unchanged`
 and `top_economics_publishing_do_modes_preserve_deposit` check these values,
 the source hashes, and both stopping modes. [Verification results](validation/results.json)
 and the [complete diagnostic transcript](validation/statscamp-nostop.log)
-are included. A fresh Stata rerun was unavailable because the installed
-license had expired; the numerical reference is the deposited Stata 13 log.
+are included. The 2026-10-15 Stata 19.5 run confirms every 2024-sample
+result; the pooled-sample differences described next come from the data and
+from Stata's sort order, not from the engine.
 
 Two inconsistencies between the deposited data and reference log prevent a
 full reproduction of the historical pooled results:
@@ -97,12 +99,15 @@ full reproduction of the historical pooled results:
   row has it missing and line 42 (`drop if articlenumber==articlenumber[_n-1]`)
   keeps a single pre-2024 row, whichever sorts first among the ties. The log
   keeps 15 (one from 1993, 14 from 2011), so the file the log used differed
-  here as well. The three `ksmirnov type if year==2011` statements (lines 63,
-  68 and 73) therefore have no observations and return `r(2000)` in
-  stats.camp. A normal run stops at the first; `do, nostop` continues. The
-  by-group tables and the `regr`/`poisson` fits on the deduplicated pooled
-  rows (lines 44–60) differ from the log in their pre-2024 rows for the same
-  reason.
+  here as well. Which row survives depends on the sort: Stata's `sort` is not
+  stable and keeps a 2011 row, while the engine's stable sort keeps the first
+  historical row after `sort year`, a 1963 row whose `type` is missing. The
+  first `by year: tab nauthors` group, the samples of `regr`/`poisson
+  nauthors i.type` (249 versus 248 observations) and the `i.year` variants
+  therefore differ between the two programs, and the three `ksmirnov type if
+  year==2011` statements (lines 63, 68 and 73) fail in both (Stata: `journal
+  takes on 1 values, not 2`, r(450); the engine: `no observations`, r(2000)).
+  A normal run stops at the first; `do, nostop` continues.
 
 ## Missing features and scope
 
@@ -116,11 +121,12 @@ produce the published Excel calculations or figure layouts. Manual female
 representation comparisons and age/co-authorship decompositions in the
 Excel workbook remain outside this replication's target.
 
-Display gaps remain: empty `ci means` groups omit Stata's row with N=0 and
-missing statistics, `tabulate` does not wrap long variable labels into the
-column header, `ksmirnov` column widths differ slightly, and `use` prints
-extra notes. Native verification does not establish a separately tested
-browser build.
+Display gaps remain: `summarize`/`regress` with `aweight` do not print
+Stata's `(sum of wgt is ...)` note, empty `ci means` groups omit Stata's row
+with N=0 and missing statistics, `tabulate` does not wrap long variable labels
+into the column header, `ksmirnov` with one group reports r(2000) instead of
+r(450), column widths differ slightly, and `use` prints extra notes. Native
+verification does not establish a separately tested browser build.
 
 Before rerunning, close any active log and remove generated `MainRuns.log`
 and `ArticlesAllYears.dta`, or use a fresh workspace. Neither `log using`
